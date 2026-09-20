@@ -24,7 +24,7 @@ et `games` pour les matchs.
 
 ## Installation avec HACS
 
-1. Dans HACS, ajouter `UnknownB81/HA-Integrations` comme depot personnalise de type
+1. Dans HACS, ajouter `UnknownB81/HA-NFL-Integration` comme depot personnalise de type
 	**Integration**.
 2. Installer `NFL`, puis redemarrer Home Assistant.
 
