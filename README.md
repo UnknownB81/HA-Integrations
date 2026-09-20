@@ -1,8 +1,7 @@
 # Integration NFL pour Home Assistant
 
-Ce dossier doit etre publie comme racine d'un depot GitHub dedie, par exemple
-`UnknownB81/HA-NFL`. Ne l'ajoute pas directement depuis le depot `HA-Addons`,
-qui est un depot d'add-ons Home Assistant.
+Cette integration est distribuee depuis le depot multi-integrations
+`UnknownB81/HA-Integrations`.
 
 Cette integration interroge les API publiques ESPN et expose les entites suivantes :
 
@@ -25,11 +24,9 @@ et `games` pour les matchs.
 
 ## Installation avec HACS
 
-1. Creer un depot GitHub dedie `UnknownB81/HA-NFL`.
-2. Publier le contenu de ce dossier a la racine de ce nouveau depot.
-3. Dans HACS, ajouter `UnknownB81/HA-NFL` comme depot personnalise de type
+1. Dans HACS, ajouter `UnknownB81/HA-Integrations` comme depot personnalise de type
 	**Integration**.
-4. Installer `NFL`, puis redemarrer Home Assistant.
+2. Installer `NFL`, puis redemarrer Home Assistant.
 
 L'installation ne necessite aucune cle API ESPN.
 
