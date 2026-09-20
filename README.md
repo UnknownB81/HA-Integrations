@@ -1,7 +1,7 @@
 # Integration NFL pour Home Assistant
 
-Cette integration est distribuee depuis le depot multi-integrations
-`UnknownB81/HA-Integrations`.
+Ce depot distribue uniquement l'integration NFL. HACS ne gere qu'une integration
+par depot : chaque nouvelle integration doit etre publiee dans son propre depot.
 
 Cette integration interroge les API publiques ESPN et expose les entites suivantes :
 
