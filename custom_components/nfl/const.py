@@ -10,5 +10,6 @@ SENSOR_TYPES = (
     ("preseason_standings", "NFL Classement Pre-saison", "nfl_preseason_standings_flat"),
     ("global_standings", "NFL Classement Global", "nfl_standings_global"),
     ("games", "NFL Matchs Du Jour", "nfl_games_today"),
+    ("upcoming_games", "NFL Matchs A Venir", "nfl_upcoming_games"),
     ("preseason_games", "NFL Matchs Pre-saison", "nfl_preseason_games_today"),
 )

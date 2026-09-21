@@ -9,6 +9,7 @@ Cette integration interroge les API publiques ESPN et expose les entites suivant
 - `sensor.nfl_classement_pre_saison`
 - `sensor.nfl_classement_global`
 - `sensor.nfl_matchs_du_jour`
+- `sensor.nfl_matchs_a_venir`
 - `sensor.nfl_matchs_pre_saison`
 
 Les donnees detaillees sont disponibles dans l'attribut `teams` pour les classements
@@ -40,6 +41,7 @@ La carte Lovelace necessite `flex-table-card` et `tabbed-card`, installables via
 
 ## Developpement
 
-Les donnees sont rafraichies toutes les cinq minutes. Les erreurs de recuperation
-ESPN sont gerees par le coordinateur Home Assistant et rendent les entites
-indisponibles jusqu'au prochain rafraichissement reussi.
+Les donnees sont rafraichies toutes les cinq minutes. Les matchs a venir couvrent
+les quatorze prochains jours. Les erreurs de recuperation ESPN sont gerees par le
+coordinateur Home Assistant et rendent les entites indisponibles jusqu'au prochain
+rafraichissement reussi.

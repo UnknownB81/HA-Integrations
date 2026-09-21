@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from aiohttp import ClientError, ClientSession
@@ -23,11 +23,17 @@ class NFLCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
 
     async def _async_update_data(self) -> dict[str, Any]:
+        today = datetime.now(UTC).date()
+        upcoming_end = today + timedelta(days=14)
         try:
-            standings, preseason, scoreboard = await asyncio.gather(
+            standings, preseason, today_scoreboard, upcoming_scoreboard = await asyncio.gather(
                 self._async_get_json(STANDINGS_URL, {"seasontype": 2, "level": 3}),
                 self._async_get_json(STANDINGS_URL, {"seasontype": 1, "level": 3}),
-                self._async_get_json(SCOREBOARD_URL, {}),
+                self._async_get_json(SCOREBOARD_URL, {"dates": today.strftime("%Y%m%d")}),
+                self._async_get_json(
+                    SCOREBOARD_URL,
+                    {"dates": f"{today:%Y%m%d}-{upcoming_end:%Y%m%d}"},
+                ),
             )
         except (ClientError, TimeoutError, ValueError) as error:
             raise UpdateFailed(f"Impossible de recuperer les donnees ESPN: {error}") from error
@@ -38,8 +44,9 @@ class NFLCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "standings": regular_teams,
             "preseason_standings": preseason_teams,
             "global_standings": _sort_global(regular_teams),
-            "games": _parse_games(scoreboard, 2),
-            "preseason_games": _parse_games(scoreboard, 1),
+            "games": _parse_games(today_scoreboard, 2),
+            "upcoming_games": _parse_games(upcoming_scoreboard, 2),
+            "preseason_games": _parse_games(upcoming_scoreboard, 1),
         }
 
     async def _async_get_json(self, url: str, params: dict[str, Any]) -> dict[str, Any]:

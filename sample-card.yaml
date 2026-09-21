@@ -85,9 +85,21 @@ tabs:
       type: vertical-stack
       cards:
         - type: custom:flex-table-card
-          title: NFL - Matchs a venir
+          title: NFL - Matchs du jour
           entities:
             include: sensor.nfl_matchs_du_jour
+          columns:
+            - { name: Date, data: games.date }
+            - { name: Exterieur, data: games.away_team }
+            - { name: "", data: games.away_score, align: center }
+            - { name: "", data: games.home_score, align: center }
+            - { name: Domicile, data: games.home_team }
+            - { name: Statut, data: games.status }
+            - { name: Stade, data: games.venue }
+        - type: custom:flex-table-card
+          title: NFL - Matchs a venir (14 jours)
+          entities:
+            include: sensor.nfl_matchs_a_venir
           columns:
             - { name: Date, data: games.date }
             - { name: Exterieur, data: games.away_team }
