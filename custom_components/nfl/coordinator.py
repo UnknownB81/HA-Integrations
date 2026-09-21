@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
 from aiohttp import ClientError, ClientSession
@@ -26,14 +26,11 @@ class NFLCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         today = datetime.now(UTC).date()
         upcoming_end = today + timedelta(days=14)
         try:
-            standings, preseason, today_scoreboard, upcoming_scoreboard = await asyncio.gather(
+            standings, preseason, today_scoreboard, upcoming_scoreboards = await asyncio.gather(
                 self._async_get_json(STANDINGS_URL, {"seasontype": 2, "level": 3}),
                 self._async_get_json(STANDINGS_URL, {"seasontype": 1, "level": 3}),
                 self._async_get_json(SCOREBOARD_URL, {"dates": today.strftime("%Y%m%d")}),
-                self._async_get_json(
-                    SCOREBOARD_URL,
-                    {"dates": f"{today:%Y%m%d}-{upcoming_end:%Y%m%d}"},
-                ),
+                self._async_get_upcoming_scoreboards(today),
             )
         except (ClientError, TimeoutError, ValueError) as error:
             raise UpdateFailed(f"Impossible de recuperer les donnees ESPN: {error}") from error
@@ -45,14 +42,20 @@ class NFLCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "preseason_standings": preseason_teams,
             "global_standings": _sort_global(regular_teams),
             "games": _parse_games(today_scoreboard, 2),
-            "upcoming_games": _parse_games(upcoming_scoreboard, 2),
-            "preseason_games": _parse_games(upcoming_scoreboard, 1),
+            "upcoming_games": _parse_games(upcoming_scoreboards, 2, today, upcoming_end),
+            "preseason_games": _parse_games(upcoming_scoreboards, 1, today, upcoming_end),
         }
 
     async def _async_get_json(self, url: str, params: dict[str, Any]) -> dict[str, Any]:
         async with self._session.get(url, params=params, timeout=30) as response:
             response.raise_for_status()
             return await response.json()
+
+    async def _async_get_upcoming_scoreboards(self, start: date) -> list[dict[str, Any]]:
+        dates = (start + timedelta(days=offset) for offset in range(15))
+        return await asyncio.gather(
+            *(self._async_get_json(SCOREBOARD_URL, {"dates": day.strftime("%Y%m%d")}) for day in dates)
+        )
 
 
 def _parse_standings(payload: dict[str, Any]) -> list[dict[str, Any]]:
@@ -81,28 +84,39 @@ def _sort_global(teams: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [team | {"rank": rank} for rank, team in enumerate(sorted_teams, 1)]
 
 
-def _parse_games(payload: dict[str, Any], season_type: int) -> list[dict[str, Any]]:
+def _parse_games(
+    payloads: dict[str, Any] | list[dict[str, Any]],
+    season_type: int,
+    start: date | None = None,
+    end: date | None = None,
+) -> list[dict[str, Any]]:
     games = []
-    for event in payload.get("events", []):
-        if event.get("season", {}).get("type") != season_type:
-            continue
-        competition = event.get("competitions", [{}])[0]
-        competitors = competition.get("competitors", [])
-        home = next((item for item in competitors if item.get("homeAway") == "home"), {})
-        away = next((item for item in competitors if item.get("homeAway") == "away"), {})
-        games.append(
-            {
-                "date": _format_date(event.get("date")),
-                "away_team": away.get("team", {}).get("abbreviation", ""),
-                "away_logo": away.get("team", {}).get("logo", ""),
-                "away_score": away.get("score", ""),
-                "home_team": home.get("team", {}).get("abbreviation", ""),
-                "home_logo": home.get("team", {}).get("logo", ""),
-                "home_score": home.get("score", ""),
-                "status": competition.get("status", {}).get("type", {}).get("shortDetail", ""),
-                "venue": competition.get("venue", {}).get("fullName", ""),
-            }
-        )
+    seen_events = set()
+    for payload in payloads if isinstance(payloads, list) else [payloads]:
+        for event in payload.get("events", []):
+            if event.get("id") in seen_events or event.get("season", {}).get("type") != season_type:
+                continue
+            event_date = _event_date(event.get("date"))
+            if event_date is None or (start and event_date < start) or (end and event_date > end):
+                continue
+            seen_events.add(event.get("id"))
+            competition = event.get("competitions", [{}])[0]
+            competitors = competition.get("competitors", [])
+            home = next((item for item in competitors if item.get("homeAway") == "home"), {})
+            away = next((item for item in competitors if item.get("homeAway") == "away"), {})
+            games.append(
+                {
+                    "date": _format_date(event.get("date")),
+                    "away_team": away.get("team", {}).get("abbreviation", ""),
+                    "away_logo": away.get("team", {}).get("logo", ""),
+                    "away_score": away.get("score", ""),
+                    "home_team": home.get("team", {}).get("abbreviation", ""),
+                    "home_logo": home.get("team", {}).get("logo", ""),
+                    "home_score": home.get("score", ""),
+                    "status": competition.get("status", {}).get("type", {}).get("shortDetail", ""),
+                    "venue": competition.get("venue", {}).get("fullName", ""),
+                }
+            )
     return games
 
 
@@ -115,6 +129,13 @@ def _stat_float(stats: dict[str, Any], name: str) -> float:
 
 
 def _format_date(value: str | None) -> str:
-    if not value:
+    event_date = _event_date(value)
+    if event_date is None:
         return ""
     return datetime.fromisoformat(value.replace("Z", "+00:00")).strftime("%a %d %b, %H:%M")
+
+
+def _event_date(value: str | None) -> date | None:
+    if not value:
+        return None
+    return datetime.fromisoformat(value.replace("Z", "+00:00")).date()
