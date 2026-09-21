@@ -31,6 +31,15 @@ et `games` pour les matchs.
 
 L'installation ne necessite aucune cle API ESPN.
 
+## Desinstallation
+
+1. Dans Home Assistant, supprimer l'integration `NFL` depuis **Parametres > Appareils et services**.
+2. Dans HACS, ouvrir `NFL`, puis choisir **Desinstaller**.
+3. Retirer les cartes NFL du dashboard Lovelace.
+
+Les dependances Lovelace `flex-table-card` et `tabbed-card` ne doivent etre
+desinstallees que si elles ne sont utilisees par aucun autre dashboard.
+
 ## Migration depuis la configuration YAML
 
 Supprimer l'ancien contenu NFL de `configuration.yaml` ou de `packages/nfl.yaml`
