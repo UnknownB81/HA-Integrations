@@ -15,6 +15,8 @@ Cette integration interroge les API publiques ESPN et expose les entites suivant
 Les donnees detaillees sont disponibles dans l'attribut `teams` pour les classements
 et `games` pour les matchs.
 
+Les notes de chaque version sont disponibles dans [CHANGELOG.md](CHANGELOG.md).
+
 ## Installation manuelle
 
 1. Copier `custom_components/nfl` dans `/config/custom_components/nfl`.

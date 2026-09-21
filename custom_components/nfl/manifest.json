@@ -1,7 +1,7 @@
 {
   "domain": "nfl",
   "name": "NFL",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "documentation": "https://github.com/UnknownB81/HA-NFL-Integration",
   "issue_tracker": "https://github.com/UnknownB81/HA-NFL-Integration/issues",
   "codeowners": ["@UnknownB81"],

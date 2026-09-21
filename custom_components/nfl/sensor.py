@@ -17,15 +17,16 @@ from .coordinator import NFLCoordinator
 class NFLSensorDescription(SensorEntityDescription):
     data_key: str
     attribute_key: str
+    entity_unique_id: str
 
 
 SENSOR_DESCRIPTIONS = tuple(
     NFLSensorDescription(
         key=key,
         name=name,
-        unique_id=unique_id,
         data_key=key,
         attribute_key="teams" if "standings" in key else "games",
+        entity_unique_id=unique_id,
     )
     for key, name, unique_id in SENSOR_TYPES
 )
@@ -44,7 +45,7 @@ class NFLSensor(CoordinatorEntity[NFLCoordinator], SensorEntity):
     def __init__(self, coordinator: NFLCoordinator, description: NFLSensorDescription) -> None:
         super().__init__(coordinator)
         self.entity_description = description
-        self._attr_unique_id = description.unique_id
+        self._attr_unique_id = description.entity_unique_id
         self._attr_name = description.name
         self._attr_has_entity_name = False
         self._attr_icon = "mdi:football"
